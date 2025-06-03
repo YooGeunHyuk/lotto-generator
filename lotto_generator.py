@@ -1,5 +1,6 @@
 import random
 import streamlit as st
+import pandas as pd
 
 # 필수 기반 데이터
 high_freq_numbers = [34, 12, 13, 18, 27, 3, 17, 7, 33, 14]
@@ -40,21 +41,24 @@ st.write("과학적으로 검증된 규칙을 바탕으로 조합을 생성하�
 num_sets = st.slider("생성할 조합 수량", 1, 20, 5)
 if st.button("🎰 조합 생성하기"):
     results = generate_lotto_set(num_sets)
-    for idx, combo in enumerate(results, 1):
-        st.markdown(f"### 🎟️ 조합 {idx}")
-        cols = st.columns(6)
-        for i, num in enumerate(combo):
-            color = "blue" if num <= 10 else "green" if num <= 20 else "orange" if num <= 30 else "red" if num <= 40 else "purple"
-            cols[i].markdown(f"<div style='text-align:center; background-color:{color}; color:white; padding:10px; border-radius:10px;'>{num}</div>", unsafe_allow_html=True)
+    all_numbers = []
+    rule_texts = []
 
-        # 규칙 통과 내역 표시
-        st.markdown("**✅ 적용된 규칙**")
-        st.write("- 홀짝 비율: 3:3 또는 4:2")
-        st.write("- 합계: 130 ~ 170")
-        st.write("- 끝수 다양성: 최소 5종")
-        st.write("- 연속된 숫자 한 쌍 포함")
-        st.write("- 번호대 분포 고름 (1~45 범위에서 최소 3구간 이상)")
-        st.write("- 동반출현 번호쌍 포함")
-        st.write("- 마코프 확률 번호 포함")
+    for combo in results:
+        all_numbers.append(", ".join(str(n) for n in combo))
+        rule_texts.append("""
+- 홀짝 비율 적절 (3:3 또는 4:2)
+- 합계 130~170
+- 끝수 다양성 ≥ 5
+- 연속된 숫자 포함
+- 번호대 분포 고름
+- 동반출현 번호쌍 포함
+- 마코프 번호 포함
+""")
 
-    st.success("✅ 조합이 성공적으로 생성되었습니다! 복사해서 사용하세요!")
+    df = pd.DataFrame({"추천 조합": all_numbers, "적용된 규칙": rule_texts})
+    st.dataframe(df, use_container_width=True)
+
+    copy_text = "\n".join(all_numbers)
+    st.text_area("📋 전체 조합 복사하기", value=copy_text, height=200)
+    st.success("✅ 조합이 표 형태로 생성되었습니다. 위 텍스트를 복사해 사용하세요!")
